@@ -1,150 +1,129 @@
-# CaptionFuck - Railway Deployment Package
+# CaptionFuck - Professional Subtitle Extraction Tool
 
-## 🚀 Super Quick Deploy
+## 🎯 What is This?
 
-### 1. Prerequisites
-- Railway account (https://railway.app)
-- GitHub account (for easy deployment)
-- Your API keys (OpenAI and/or Anthropic)
-
-### 2. Deploy in 2 Minutes
-
-```bash
-# In this folder (deploy_railway)
-git init
-git add .
-git commit -m "Deploy CaptionFuck"
-
-# Push to GitHub
-git remote add origin https://github.com/yourusername/captionfuck.git
-git push -u origin main
-
-# Go to Railway:
-# 1. New Project → Deploy from GitHub
-# 2. Select your repository
-# 3. Add environment variables:
-#    - OPENAI_API_KEY=your-key
-#    - ANTHROPIC_API_KEY=your-key
-# 4. Deploy!
-```
-
-### 3. Your App is Live!
-
-Railway gives you a URL like: `https://your-app.up.railway.app`
+CaptionFuck is a professional AI-powered subtitle extraction and translation tool. Upload any video with hardcoded subtitles, and our AI will extract them and optionally translate to 17 different languages.
 
 ---
 
-## ✨ What's Included
+## ✨ Features
 
-✅ **Complete Backend** - FastAPI with all features
-✅ **Complete Frontend** - React app with Material UI
-✅ **8 AI Models** - Claude 4.5, GPT-5, etc.
-✅ **17 Languages** - Translation support
-✅ **Real-time Updates** - WebSocket support
-✅ **Job History** - Track all extractions
-✅ **Dark Mode** - Professional UI
+### Core Capabilities
+- 🎥 **Video Subtitle Extraction** - Extract hardcoded subtitles from any video
+- 🤖 **8 Advanced AI Models** - Choose from Claude 4.5, GPT-5, and more
+- 🌍 **17 Translation Languages** - Translate subtitles to any supported language
+- 📊 **Real-time Progress** - Watch your video being processed live
+- 📁 **Job History** - Track and manage all your extractions
+- 📥 **Multiple Formats** - Download as SRT or VTT
 
----
+### Supported AI Models
+- **Claude Models**: Claude 4.5 Sonnet (Newest), Claude 4 Sonnet (Fast), Claude 3.7 Sonnet (Classic)
+- **GPT Models**: GPT-5 Chat, GPT-4.1, GPT-4.1 Mini, GPT-4o, o4-Mini
 
-## 📁 Folder Structure
+### Supported Translation Languages
+English, Hebrew, Spanish, French, German, Italian, Portuguese, Russian, Chinese (Simplified & Traditional), Japanese, Korean, Arabic, Hindi, Dutch, Turkish, Polish
 
-```
-deploy_railway/
-├── main.py                 # Production entry point
-├── app.py                  # Core processing logic
-├── prompt.txt              # AI prompt
-├── requirements.txt        # Python deps
-├── Procfile                # Railway start
-├── nixpacks.toml           # Build config
-├── railway.json            # Railway settings
-├── .gitignore              # Git ignore
-├── .env.example            # Env template
-└── web_app/                # React frontend
-    ├── package.json
-    ├── vite.config.js
-    └── src/
-```
+### User Experience
+- 🌓 **Dark Mode** - Easy on your eyes
+- 📱 **Mobile Responsive** - Works on any device
+- 🎨 **Professional UI** - Clean, modern interface
+- ⚡ **Fast Processing** - Optimized for speed
+- 🔐 **Secure** - Your API keys stay in your browser
 
 ---
 
-## ⚙️ Environment Variables (Set in Railway)
+## 🚀 How to Use
 
-**Required:**
-- `OPENAI_API_KEY` - For GPT models
-- `ANTHROPIC_API_KEY` - For Claude models
-
-**Optional:**
-- `PORT` - Auto-set by Railway
-- `ENVIRONMENT` - Set to "production"
-
----
-
-## 🔥 Features
-
-### For Users
-- Upload videos from any device
-- Extract hardcoded subtitles with AI
-- Translate to 17 languages
-- Download SRT/VTT files
-- Track job history
-- Works on mobile!
-
-### Technical
-- FastAPI backend (async, fast)
-- React frontend (modern, responsive)
-- WebSocket (real-time progress)
-- Material UI (professional design)
-- Production-ready
-- Scalable architecture
+1. **Upload Video** - Drag & drop or click to browse
+2. **Select AI Model** - Choose from 8 available models
+3. **Enter API Key** - Your OpenAI or Anthropic key (stored in browser)
+4. **Choose Language** (Optional) - Select target language for translation
+5. **Extract** - Click the button and watch real-time progress
+6. **Download** - Get your SRT/VTT subtitle files
 
 ---
 
-## 📖 Documentation
+## 🔑 API Keys
 
-- `DEPLOY_TO_RAILWAY.md` - Detailed deployment guide
-- `.env.example` - Environment variables template
+You'll need an API key from:
+- **OpenAI**: For GPT models → https://platform.openai.com/api-keys
+- **Anthropic**: For Claude models → https://console.anthropic.com/settings/keys
 
----
-
-## 🎯 Quick Commands
-
-```bash
-# Test locally before deploying
-pip install -r requirements.txt
-cd web_app && npm install && npm run build && cd ..
-python main.py
-
-# Deploy to Railway
-railway login
-railway init
-railway up
-
-# View logs
-railway logs
-
-# Open deployed app
-railway open
-```
+Your keys are stored securely in your browser and never sent to our servers. They're only used to call OpenAI/Anthropic APIs directly from your browser.
 
 ---
 
-## ✅ Deployment Checklist
+## 🎬 Supported Video Formats
 
-Before pushing to Railway:
-
-- [ ] Git repository initialized
-- [ ] All files committed
-- [ ] .gitignore properly configured
-- [ ] Frontend builds successfully
-- [ ] Backend runs locally
-- [ ] Railway project created
-- [ ] Environment variables set
-- [ ] API keys added to Railway
+- MP4
+- AVI
+- MOV
+- MKV
+- WebM
 
 ---
 
-## 🌟 That's It!
+## 📥 Output Formats
 
-Your professional subtitle extraction tool will be **LIVE ON THE INTERNET** with just a few commands!
+- **SRT** - Standard subtitle format (universally supported)
+- **VTT** - WebVTT format (for HTML5 video players)
 
-**Happy deploying! 🚀**
+---
+
+## 🌟 Why Use CaptionFuck?
+
+- ✅ **No Manual Typing** - AI extracts subtitles automatically
+- ✅ **High Accuracy** - Advanced OCR with state-of-the-art AI models
+- ✅ **Fast Processing** - Optimized extraction algorithms
+- ✅ **Multiple Languages** - Extract and translate in one step
+- ✅ **Privacy-Focused** - Your videos and keys stay private
+- ✅ **Professional Quality** - Enterprise-grade subtitle extraction
+
+---
+
+## 🛠️ Technology
+
+Built with modern web technologies:
+- **Backend**: FastAPI (Python)
+- **Frontend**: React + Material UI
+- **AI**: OpenAI GPT and Anthropic Claude
+- **Real-time**: WebSocket communication
+
+---
+
+## 📊 Perfect For
+
+- Content creators needing subtitles for videos
+- Translators working with video content
+- Accessibility professionals
+- Video editors and producers
+- Educational content creators
+- International content distribution
+
+---
+
+## 🌐 Access
+
+Use this tool through your web browser. Works on:
+- Desktop computers (Windows, Mac, Linux)
+- Tablets (iPad, Android)
+- Mobile phones (iOS, Android)
+
+---
+
+## 💡 Tips for Best Results
+
+- Use videos with clear, high-contrast subtitles
+- Ensure subtitles are visible and not obscured
+- Higher quality videos produce better results
+- Adjust advanced parameters for optimal extraction
+
+---
+
+## 🎓 About
+
+CaptionFuck combines computer vision, OCR, and AI language models to provide professional subtitle extraction and translation services. Our advanced algorithms detect subtitle regions, extract text with high accuracy, and provide natural translations that maintain timing perfection.
+
+---
+
+**Start extracting subtitles now!** 🚀

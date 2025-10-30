@@ -102,6 +102,7 @@ class ExtractionRequest(BaseModel):
     ai_model: str
     parameters: ProcessingParameters = ProcessingParameters()
     translation: TranslationSettings = TranslationSettings()
+    api_keys: Dict[str, str] = {}
 
 class ApiKeyUpdate(BaseModel):
     openai_key: Optional[str] = None
@@ -244,11 +245,11 @@ async def start_processing(request: ExtractionRequest, background_tasks: Backgro
     jobs_db[job_id]["parameters"] = request.parameters.dict()
     jobs_db[job_id]["translation_language"] = request.translation.target_language
 
-    background_tasks.add_task(process_video_task, job_id, request.ai_model, request.parameters, request.translation)
+    background_tasks.add_task(process_video_task, job_id, request.ai_model, request.parameters, request.translation, request.api_keys)
 
     return {"status": "processing_started", "job_id": job_id}
 
-async def process_video_task(job_id: str, ai_model: str, parameters: ProcessingParameters, translation: TranslationSettings):
+async def process_video_task(job_id: str, ai_model: str, parameters: ProcessingParameters, translation: TranslationSettings, api_keys_from_request: Dict[str, str]):
     try:
         job = jobs_db[job_id]
         video_path = job["video_path"]
@@ -279,12 +280,12 @@ async def process_video_task(job_id: str, ai_model: str, parameters: ProcessingP
 
         await update_job_progress(job_id, 50, "Generating subtitles with AI...")
 
-        api_keys = get_api_keys()
+        # Use API keys from request (stored in browser)
         prompt_file = os.path.join(BASE_DIR, PROMPT_FILE_NAME)
         srt_file = generate_srt_from_keyframes(
             composite_image_paths=composite_paths,
             time_segments=segments,
-            api_keys=api_keys,
+            api_keys=api_keys_from_request,
             prompt_file_path=prompt_file,
             process_dir=process_dir,
             logger=logger_inst,
@@ -297,7 +298,7 @@ async def process_video_task(job_id: str, ai_model: str, parameters: ProcessingP
         translated_vtt = None
         if translation.enabled and translation.target_language:
             await update_job_progress(job_id, 70, f"Translating to {translation.target_language}...", "translating")
-            translated_srt, translated_vtt = translate_srt(srt_file, translation.target_language, api_keys, logger_inst, model=ai_model)
+            translated_srt, translated_vtt = translate_srt(srt_file, translation.target_language, api_keys_from_request, logger_inst, model=ai_model)
 
         await update_job_progress(job_id, 90, "Finalizing...")
 

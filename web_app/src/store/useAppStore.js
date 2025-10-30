@@ -78,9 +78,11 @@ export const useAppStore = create(
       name: 'captionfuck-storage',
       partialize: (state) => ({
         darkMode: state.darkMode,
+        apiKeys: state.apiKeys,
         parameters: state.parameters,
         selectedModel: state.selectedModel,
         sidebarOpen: state.sidebarOpen,
+        targetLanguage: state.targetLanguage,
       }),
     }
   )

@@ -18,6 +18,9 @@ import {
   Chip,
   Alert,
   CircularProgress,
+  TextField,
+  InputAdornment,
+  IconButton,
 } from '@mui/material';
 import {
   ExpandMore,
@@ -25,6 +28,11 @@ import {
   PlayArrow,
   Language,
   Tune,
+  Key,
+  Visibility,
+  VisibilityOff,
+  SmartToy,
+  CheckCircle,
 } from '@mui/icons-material';
 import { useDropzone } from 'react-dropzone';
 import { useAppStore } from '../store/useAppStore';
@@ -68,6 +76,8 @@ function Dashboard() {
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isUploading, setIsUploading] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [showOpenaiKey, setShowOpenaiKey] = useState(false);
+  const [showAnthropicKey, setShowAnthropicKey] = useState(false);
 
   // Store
   const selectedModel = useAppStore((state) => state.selectedModel);
@@ -76,7 +86,14 @@ function Dashboard() {
   const setTargetLanguage = useAppStore((state) => state.setTargetLanguage);
   const parameters = useAppStore((state) => state.parameters);
   const setParameters = useAppStore((state) => state.setParameters);
+  const apiKeys = useAppStore((state) => state.apiKeys);
+  const setApiKeys = useAppStore((state) => state.setApiKeys);
   const addJob = useAppStore((state) => state.addJob);
+
+  // Determine which provider is needed for selected model
+  const selectedModelInfo = MODELS.find(m => m.value === selectedModel);
+  const needsOpenAI = selectedModelInfo?.provider === 'OpenAI';
+  const needsAnthropic = selectedModelInfo?.provider === 'Anthropic';
 
   const onDrop = useCallback((acceptedFiles) => {
     if (acceptedFiles && acceptedFiles.length > 0) {
@@ -97,6 +114,16 @@ function Dashboard() {
   const handleProcessVideo = async () => {
     if (!selectedFile) {
       toast.error('Please select a video file first');
+      return;
+    }
+
+    // Validate API keys based on selected model
+    if (needsOpenAI && !apiKeys.openai) {
+      toast.error('Please enter your OpenAI API key in the configuration section');
+      return;
+    }
+    if (needsAnthropic && !apiKeys.anthropic) {
+      toast.error('Please enter your Anthropic API key in the configuration section');
       return;
     }
 
@@ -141,6 +168,7 @@ function Dashboard() {
           enabled: Boolean(targetLanguage),
           target_language: targetLanguage,
         },
+        api_keys: apiKeys,
       });
 
       toast.success('Processing started! Check Job History for progress.', { id: 'process' });
@@ -227,36 +255,122 @@ function Dashboard() {
           </Card>
         </Grid>
 
-        {/* Model Selection */}
-        <Grid item xs={12} md={6}>
-          <Card>
-            <CardContent>
-              <FormControl fullWidth>
-                <InputLabel>AI Model</InputLabel>
-                <Select
-                  value={selectedModel}
-                  onChange={(e) => setSelectedModel(e.target.value)}
-                  label="AI Model"
-                  disabled={isUploading || isProcessing}
-                >
-                  {MODELS.map((model) => (
-                    <MenuItem key={model.value} value={model.value}>
-                      <Box>
-                        <Typography variant="body2">{model.label}</Typography>
-                        <Typography variant="caption" color="text.secondary">
-                          {model.provider}
-                        </Typography>
-                      </Box>
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-            </CardContent>
-          </Card>
+        {/* API Keys & Model Selection - Compact Collapsed */}
+        <Grid item xs={12}>
+          <Accordion defaultExpanded={false}>
+            <AccordionSummary expandIcon={<ExpandMore />}>
+              <Box display="flex" alignItems="center" gap={1}>
+                <SmartToy color="primary" />
+                <Typography fontWeight={600}>AI Configuration</Typography>
+                {(apiKeys.openai || apiKeys.anthropic) && (
+                  <CheckCircle sx={{ fontSize: 16, color: 'success.main', ml: 1 }} />
+                )}
+              </Box>
+            </AccordionSummary>
+            <AccordionDetails>
+              <Grid container spacing={2}>
+                {/* Model Selection */}
+                <Grid item xs={12}>
+                  <FormControl fullWidth size="small">
+                    <InputLabel>AI Model</InputLabel>
+                    <Select
+                      value={selectedModel}
+                      onChange={(e) => setSelectedModel(e.target.value)}
+                      label="AI Model"
+                      disabled={isUploading || isProcessing}
+                    >
+                      {MODELS.map((model) => (
+                        <MenuItem key={model.value} value={model.value}>
+                          <Box display="flex" justifyContent="space-between" width="100%">
+                            <Typography variant="body2">{model.label}</Typography>
+                            <Chip label={model.provider} size="small" variant="outlined" sx={{ ml: 1 }} />
+                          </Box>
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                </Grid>
+
+                {/* OpenAI API Key */}
+                <Grid item xs={12} md={6}>
+                  <TextField
+                    fullWidth
+                    size="small"
+                    label="OpenAI API Key"
+                    type={showOpenaiKey ? 'text' : 'password'}
+                    value={apiKeys.openai}
+                    onChange={(e) => setApiKeys({ ...apiKeys, openai: e.target.value })}
+                    placeholder="sk-..."
+                    disabled={isUploading || isProcessing}
+                    InputProps={{
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <Key fontSize="small" color={apiKeys.openai ? 'success' : 'disabled'} />
+                        </InputAdornment>
+                      ),
+                      endAdornment: (
+                        <InputAdornment position="end">
+                          <IconButton
+                            size="small"
+                            onClick={() => setShowOpenaiKey(!showOpenaiKey)}
+                            edge="end"
+                          >
+                            {showOpenaiKey ? <VisibilityOff fontSize="small" /> : <Visibility fontSize="small" />}
+                          </IconButton>
+                        </InputAdornment>
+                      ),
+                    }}
+                    helperText={`For GPT models ${needsOpenAI ? '(Required for selected model)' : ''}`}
+                    error={needsOpenAI && !apiKeys.openai}
+                  />
+                </Grid>
+
+                {/* Anthropic API Key */}
+                <Grid item xs={12} md={6}>
+                  <TextField
+                    fullWidth
+                    size="small"
+                    label="Anthropic API Key"
+                    type={showAnthropicKey ? 'text' : 'password'}
+                    value={apiKeys.anthropic}
+                    onChange={(e) => setApiKeys({ ...apiKeys, anthropic: e.target.value })}
+                    placeholder="sk-ant-..."
+                    disabled={isUploading || isProcessing}
+                    InputProps={{
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <Key fontSize="small" color={apiKeys.anthropic ? 'success' : 'disabled'} />
+                        </InputAdornment>
+                      ),
+                      endAdornment: (
+                        <InputAdornment position="end">
+                          <IconButton
+                            size="small"
+                            onClick={() => setShowAnthropicKey(!showAnthropicKey)}
+                            edge="end"
+                          >
+                            {showAnthropicKey ? <VisibilityOff fontSize="small" /> : <Visibility fontSize="small" />}
+                          </IconButton>
+                        </InputAdornment>
+                      ),
+                    }}
+                    helperText={`For Claude models ${needsAnthropic ? '(Required for selected model)' : ''}`}
+                    error={needsAnthropic && !apiKeys.anthropic}
+                  />
+                </Grid>
+
+                <Grid item xs={12}>
+                  <Alert severity="info" sx={{ fontSize: '0.875rem' }}>
+                    API keys are stored securely in your browser and never sent to our servers. They're only used to call OpenAI/Anthropic directly.
+                  </Alert>
+                </Grid>
+              </Grid>
+            </AccordionDetails>
+          </Accordion>
         </Grid>
 
         {/* Translation */}
-        <Grid item xs={12} md={6}>
+        <Grid item xs={12}>
           <Card>
             <CardContent>
               <Box display="flex" alignItems="center" gap={1} mb={1}>
