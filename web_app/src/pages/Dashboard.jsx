@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import {
   Box,
   Card,
@@ -21,6 +21,8 @@ import {
   TextField,
   InputAdornment,
   IconButton,
+  Paper,
+  Divider,
 } from '@mui/material';
 import {
   ExpandMore,
@@ -33,6 +35,9 @@ import {
   VisibilityOff,
   SmartToy,
   CheckCircle,
+  Download,
+  VideoFile,
+  Subtitles,
 } from '@mui/icons-material';
 import { useDropzone } from 'react-dropzone';
 import { useAppStore } from '../store/useAppStore';
@@ -46,7 +51,7 @@ const MODELS = [
   { value: 'gpt-5-chat-latest', label: 'GPT-5 Chat Latest', provider: 'OpenAI' },
   { value: 'gpt-4.1-2025-04-14', label: 'GPT-4.1', provider: 'OpenAI' },
   { value: 'gpt-4.1-mini', label: 'GPT-4.1 Mini', provider: 'OpenAI' },
-  { value: 'gpt-4o', label: 'GPT-4o', provider: 'OpenAI' },
+  { value: 'gpt-5', label: 'GPT-4o', provider: 'OpenAI' },
   { value: 'o4-mini', label: 'o4-Mini', provider: 'OpenAI' },
 ];
 
@@ -78,6 +83,7 @@ function Dashboard() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [showOpenaiKey, setShowOpenaiKey] = useState(false);
   const [showAnthropicKey, setShowAnthropicKey] = useState(false);
+  const [currentJobId, setCurrentJobId] = useState(null);
 
   // Store
   const selectedModel = useAppStore((state) => state.selectedModel);
@@ -89,11 +95,24 @@ function Dashboard() {
   const apiKeys = useAppStore((state) => state.apiKeys);
   const setApiKeys = useAppStore((state) => state.setApiKeys);
   const addJob = useAppStore((state) => state.addJob);
+  const jobs = useAppStore((state) => state.jobs);
 
-  // Determine which provider is needed for selected model
+  // Get current job data
+  const currentJob = currentJobId ? jobs.find(j => j.id === currentJobId) : null;
+
+  // Determine which provider is needed
   const selectedModelInfo = MODELS.find(m => m.value === selectedModel);
   const needsOpenAI = selectedModelInfo?.provider === 'OpenAI';
   const needsAnthropic = selectedModelInfo?.provider === 'Anthropic';
+
+  // Update processing state based on current job
+  useEffect(() => {
+    if (currentJob) {
+      if (currentJob.status === 'completed' || currentJob.status === 'failed') {
+        setIsProcessing(false);
+      }
+    }
+  }, [currentJob]);
 
   const onDrop = useCallback((acceptedFiles) => {
     if (acceptedFiles && acceptedFiles.length > 0) {
@@ -117,13 +136,13 @@ function Dashboard() {
       return;
     }
 
-    // Validate API keys based on selected model
+    // Validate API keys
     if (needsOpenAI && !apiKeys.openai) {
-      toast.error('Please enter your OpenAI API key in the configuration section');
+      toast.error('Please enter your OpenAI API key');
       return;
     }
     if (needsAnthropic && !apiKeys.anthropic) {
-      toast.error('Please enter your Anthropic API key in the configuration section');
+      toast.error('Please enter your Anthropic API key');
       return;
     }
 
@@ -154,6 +173,7 @@ function Dashboard() {
         parameters: parameters,
       };
       addJob(newJob);
+      setCurrentJobId(job_id);
 
       setIsUploading(false);
       setIsProcessing(true);
@@ -171,12 +191,9 @@ function Dashboard() {
         api_keys: apiKeys,
       });
 
-      toast.success('Processing started! Check Job History for progress.', { id: 'process' });
+      toast.success('Processing started!', { id: 'process' });
 
-      // Reset form
-      setSelectedFile(null);
-      setUploadProgress(0);
-      setIsProcessing(false);
+      // Don't reset - keep form visible with current job progress
     } catch (error) {
       console.error('Error processing video:', error);
       toast.error(error.response?.data?.detail || 'Failed to process video', { id: 'upload' });
@@ -313,14 +330,13 @@ function Dashboard() {
                           <IconButton
                             size="small"
                             onClick={() => setShowOpenaiKey(!showOpenaiKey)}
-                            edge="end"
                           >
                             {showOpenaiKey ? <VisibilityOff fontSize="small" /> : <Visibility fontSize="small" />}
                           </IconButton>
                         </InputAdornment>
                       ),
                     }}
-                    helperText={`For GPT models ${needsOpenAI ? '(Required for selected model)' : ''}`}
+                    helperText={needsOpenAI ? 'Required for selected model' : 'For GPT models'}
                     error={needsOpenAI && !apiKeys.openai}
                   />
                 </Grid>
@@ -347,21 +363,20 @@ function Dashboard() {
                           <IconButton
                             size="small"
                             onClick={() => setShowAnthropicKey(!showAnthropicKey)}
-                            edge="end"
                           >
                             {showAnthropicKey ? <VisibilityOff fontSize="small" /> : <Visibility fontSize="small" />}
                           </IconButton>
                         </InputAdornment>
                       ),
                     }}
-                    helperText={`For Claude models ${needsAnthropic ? '(Required for selected model)' : ''}`}
+                    helperText={needsAnthropic ? 'Required for selected model' : 'For Claude models'}
                     error={needsAnthropic && !apiKeys.anthropic}
                   />
                 </Grid>
 
                 <Grid item xs={12}>
                   <Alert severity="info" sx={{ fontSize: '0.875rem' }}>
-                    API keys are stored securely in your browser and never sent to our servers. They're only used to call OpenAI/Anthropic directly.
+                    Keys stored in your browser only. Never sent to our servers.
                   </Alert>
                 </Grid>
               </Grid>
@@ -393,11 +408,149 @@ function Dashboard() {
                 </Select>
               </FormControl>
               <Typography variant="caption" color="text.secondary" mt={1} display="block">
-                Leave as "None" to skip translation. Selecting a language will automatically translate the subtitles.
+                Select a language to translate subtitles automatically.
               </Typography>
             </CardContent>
           </Card>
         </Grid>
+
+        {/* Current Job Progress */}
+        {currentJob && isProcessing && (
+          <Grid item xs={12}>
+            <Card>
+              <CardContent>
+                <Typography variant="h6" gutterBottom>Processing: {currentJob.video_name}</Typography>
+                <Box mb={2}>
+                  <LinearProgress variant="determinate" value={currentJob.progress || 0} />
+                  <Typography variant="body2" color="text.secondary" mt={1}>
+                    {currentJob.current_step || 'Processing...'} - {currentJob.progress || 0}%
+                  </Typography>
+                </Box>
+                <Chip label={currentJob.status} color="primary" size="small" />
+              </CardContent>
+            </Card>
+          </Grid>
+        )}
+
+        {/* Output Files */}
+        {currentJob && currentJob.status === 'completed' && (
+          <Grid item xs={12}>
+            <Card>
+              <CardContent>
+                <Typography variant="h6" gutterBottom color="success.main">
+                  <CheckCircle sx={{ verticalAlign: 'middle', mr: 1 }} />
+                  Processing Complete!
+                </Typography>
+                <Divider sx={{ my: 2 }} />
+                <Grid container spacing={2}>
+                  {currentJob.output_files?.srt && (
+                    <Grid item xs={12} sm={6} md={4}>
+                      <Button
+                        fullWidth
+                        variant="outlined"
+                        startIcon={<Download />}
+                        onClick={() => api.downloadFile(currentJob.id, 'srt').then(res => {
+                          const url = window.URL.createObjectURL(new Blob([res.data]));
+                          const a = document.createElement('a');
+                          a.href = url;
+                          a.download = `${currentJob.video_name}.srt`;
+                          a.click();
+                        })}
+                      >
+                        Download SRT
+                      </Button>
+                    </Grid>
+                  )}
+                  {currentJob.output_files?.vtt && (
+                    <Grid item xs={12} sm={6} md={4}>
+                      <Button
+                        fullWidth
+                        variant="outlined"
+                        startIcon={<Download />}
+                        onClick={() => api.downloadFile(currentJob.id, 'vtt').then(res => {
+                          const url = window.URL.createObjectURL(new Blob([res.data]));
+                          const a = document.createElement('a');
+                          a.href = url;
+                          a.download = `${currentJob.video_name}.vtt`;
+                          a.click();
+                        })}
+                      >
+                        Download VTT
+                      </Button>
+                    </Grid>
+                  )}
+                  {currentJob.output_files?.translated_srt && (
+                    <Grid item xs={12} sm={6} md={4}>
+                      <Button
+                        fullWidth
+                        variant="outlined"
+                        color="secondary"
+                        startIcon={<Download />}
+                        onClick={() => api.downloadFile(currentJob.id, 'translated_srt').then(res => {
+                          const url = window.URL.createObjectURL(new Blob([res.data]));
+                          const a = document.createElement('a');
+                          a.href = url;
+                          a.download = `${currentJob.video_name}_translated.srt`;
+                          a.click();
+                        })}
+                      >
+                        Download Translated SRT
+                      </Button>
+                    </Grid>
+                  )}
+                  {currentJob.output_files?.processed_video && (
+                    <Grid item xs={12} sm={6} md={4}>
+                      <Button
+                        fullWidth
+                        variant="outlined"
+                        startIcon={<VideoFile />}
+                        onClick={() => api.downloadFile(currentJob.id, 'processed_video').then(res => {
+                          const url = window.URL.createObjectURL(new Blob([res.data]));
+                          const a = document.createElement('a');
+                          a.href = url;
+                          a.download = `${currentJob.video_name}_processed.mp4`;
+                          a.click();
+                        })}
+                      >
+                        Download Processed Video
+                      </Button>
+                    </Grid>
+                  )}
+                  {currentJob.output_files?.log && (
+                    <Grid item xs={12} sm={6} md={4}>
+                      <Button
+                        fullWidth
+                        variant="outlined"
+                        startIcon={<Subtitles />}
+                        onClick={() => api.downloadFile(currentJob.id, 'log').then(res => {
+                          const url = window.URL.createObjectURL(new Blob([res.data]));
+                          const a = document.createElement('a');
+                          a.href = url;
+                          a.download = `${currentJob.video_name}_log.txt`;
+                          a.click();
+                        })}
+                      >
+                        Download Log
+                      </Button>
+                    </Grid>
+                  )}
+                </Grid>
+                <Box mt={2}>
+                  <Button
+                    variant="contained"
+                    onClick={() => {
+                      setCurrentJobId(null);
+                      setSelectedFile(null);
+                      setIsProcessing(false);
+                    }}
+                  >
+                    Process Another Video
+                  </Button>
+                </Box>
+              </CardContent>
+            </Card>
+          </Grid>
+        )}
 
         {/* Advanced Parameters */}
         <Grid item xs={12}>
@@ -512,9 +665,6 @@ function Dashboard() {
           >
             {isProcessing ? 'Processing...' : 'Extract Subtitles'}
           </Button>
-          <Typography variant="caption" color="text.secondary" mt={1} display="block">
-            Subtitle extraction is always enabled. Translation only happens if you select a language.
-          </Typography>
         </Grid>
       </Grid>
     </Box>
