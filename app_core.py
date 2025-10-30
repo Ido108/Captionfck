@@ -553,8 +553,28 @@ def generate_srt_from_keyframes(
             else:
                 raise ValueError("Invalid response from OpenAI")
 
+        # Clean SRT content - remove any intro text before the first subtitle number
+        # Look for the first occurrence of "1\n" followed by timestamp
+        cleaned_srt = srt_content
+
+        # Find the first line that starts with "1" followed by newline and timestamp pattern
+        lines = srt_content.split('\n')
+        start_idx = 0
+        for i, line in enumerate(lines):
+            if line.strip() == '1' and i + 1 < len(lines) and '-->' in lines[i + 1]:
+                start_idx = i
+                break
+
+        if start_idx > 0:
+            logger.warning(f"Removing {start_idx} lines of intro text from AI response")
+            cleaned_srt = '\n'.join(lines[start_idx:])
+
+        # Also strip markdown code blocks if present
+        cleaned_srt = cleaned_srt.replace('```srt', '').replace('```', '')
+        cleaned_srt = cleaned_srt.strip()
+
         with open(srt_path, "w", encoding="utf-8") as f:
-            f.write(srt_content)
+            f.write(cleaned_srt)
 
         logger.info(f"SRT file saved")
         return srt_path
