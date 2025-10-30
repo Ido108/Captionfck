@@ -23,8 +23,8 @@ import uuid
 from datetime import datetime
 import logging
 
-# Import from app.py
-from app import (
+# Import from app_core.py (no Gradio, only processing functions)
+from app_core import (
     extract_subtitle_keyframes,
     generate_srt_from_keyframes,
     translate_srt,
