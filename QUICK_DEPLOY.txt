@@ -1,0 +1,70 @@
+================================================================================
+  CaptionFuck - RAILWAY DEPLOYMENT CHEAT SHEET
+================================================================================
+
+FASTEST METHOD (Railway CLI):
+----------------------------
+
+1. Install Railway CLI:
+   npm install -g @railway/cli
+
+2. Deploy (from this folder):
+   railway login
+   railway init
+   railway up
+
+3. Set environment variables in Railway dashboard:
+   OPENAI_API_KEY=your-key
+   ANTHROPIC_API_KEY=your-key
+
+4. Done! Get your URL:
+   railway open
+
+================================================================================
+
+GITHUB METHOD:
+--------------
+
+1. Run DEPLOY.bat (prepares everything)
+
+2. Push to GitHub:
+   git remote add origin https://github.com/yourusername/captionfuck.git
+   git push -u origin main
+
+3. On Railway:
+   - New Project
+   - Deploy from GitHub
+   - Select repo
+   - Add API keys to env variables
+   - Deploy
+
+================================================================================
+
+ENVIRONMENT VARIABLES (Required):
+----------------------------------
+
+Set these in Railway dashboard → Variables:
+
+OPENAI_API_KEY=sk-your-openai-key-here
+ANTHROPIC_API_KEY=sk-ant-your-anthropic-key-here
+
+================================================================================
+
+THAT'S ALL!
+
+Your URL: https://your-app.up.railway.app
+
+Features:
+✨ 8 AI Models (Claude 4.5, GPT-5, etc.)
+🌍 17 Translation Languages
+📊 Real-time Progress Tracking
+📁 Job History
+🌓 Dark Mode
+📱 Mobile Responsive
+
+================================================================================
+
+Help: Read DEPLOY_TO_RAILWAY.md
+Support: https://docs.railway.app
+
+================================================================================
