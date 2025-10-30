@@ -1,11 +1,12 @@
 [phases.setup]
-nixPkgs = ["python310", "nodejs_18", "python310Packages.pip", "python310Packages.setuptools"]
+nixPkgs = ["python310", "nodejs_18"]
 
 [phases.install]
 cmds = [
-    "pip install -r requirements.txt",
+    "python3 -m venv /opt/venv",
+    ". /opt/venv/bin/activate && pip install -r requirements.txt",
     "cd web_app && npm install && npm run build && cd .."
 ]
 
 [start]
-cmd = "uvicorn main:app --host 0.0.0.0 --port ${PORT:-8000}"
+cmd = ". /opt/venv/bin/activate && uvicorn main:app --host 0.0.0.0 --port ${PORT:-8000}"
