@@ -476,7 +476,7 @@ def generate_srt_from_keyframes(
     except:
         pass
 
-    text_content = f"JSON timing data:\n```json\n{json.dumps(time_segments, indent=2)}\n```\nExtract text and generate SRT."
+    text_content = f"Here is the JSON timing data for the original subtitle segments. Each segment includes the relative path to the *individual* keyframe image that represents the visual state at the start of that segment. You need to correlate the timestamps burned onto the sub-images within the composite images provided below with the 'start_ms' in this JSON data:\n```json\n{json.dumps(time_segments, indent=2)}\n```\nAnalyze the following composite keyframe images, extract text from the timestamped sub-images, correlate with the JSON, merge segments, and generate the SRT output."
 
     valid_composites_sent = 0
     base64_images = []

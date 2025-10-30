@@ -181,7 +181,21 @@ function Dashboard() {
       const url = window.URL.createObjectURL(new Blob([response.data]));
       const a = document.createElement('a');
       a.href = url;
-      a.download = `${selectedFile.name}_${fileType}`;
+
+      // Get base filename without extension
+      const baseFilename = selectedFile.name.replace(/\.[^/.]+$/, '');
+
+      // Generate proper filename based on file type
+      const filenameMap = {
+        'srt': `${baseFilename}.srt`,
+        'vtt': `${baseFilename}.vtt`,
+        'translated_srt': `${baseFilename}_${targetLanguage || 'translated'}.srt`,
+        'translated_vtt': `${baseFilename}_${targetLanguage || 'translated'}.vtt`,
+        'processed_video': `${baseFilename}_processed.mp4`,
+        'log': `${baseFilename}_log.txt`,
+      };
+
+      a.download = filenameMap[fileType] || `${baseFilename}_${fileType}`;
       a.click();
       window.URL.revokeObjectURL(url);
       toast.success('Downloaded!');
